@@ -48,6 +48,9 @@ const timer = 300
 
 const Bingo = (row: number, col: number) => {
   const cell = reactiveTable[row][col]
+
+  if (cell.EDIT) return;
+
   clearTimeout(handleClickTimer.value);
   handleClickTimer.value = setTimeout(() => {
     cell.BINGO = !cell.BINGO;
@@ -56,12 +59,14 @@ const Bingo = (row: number, col: number) => {
 
 const edit = (row: number, col: number) => {
   const cell = reactiveTable[row][col]
-  if (cell.EDIT !== true) {
+
+  if (!cell.EDIT) {
     clearTimeout(handleClickTimer.value);
     cell.EDIT = true;
     cell.BINGO = false;
     nextTick(() => {
       textareaRefs.value[row * bingoSettings.bingoNumber + col]!.focus();
+      textareaRefs.value[row * bingoSettings.bingoNumber + col]!.style.cursor = 'text';
     })
   }
 }
@@ -84,8 +89,9 @@ onMounted(() => {
             <div :row="rowIndex" :col="colIndex" class="bingo-table-main-row-cell" v-for="(cell, colIndex) in row"
               :key="colIndex" @click="Bingo(rowIndex, colIndex)" @dblclick="edit(rowIndex, colIndex)">
               <img class="bingo" :style="{ display: cell.BINGO ? 'block' : 'none' }" src="/Bingo.png" />
-              <textarea ref="textareaRefs" class="" type="text" v-model="cell.content" :disabled="!cell.EDIT"
-                @blur="cell.EDIT = false" />
+              <textarea ref="textareaRefs" type="text" v-model="cell.content"
+                :style="{ 'cursor': !cell.EDIT ? 'pointer' : 'auto', 'pointer-events': !cell.EDIT ? 'none' : 'auto' }"
+                :disabled="!cell.EDIT" @blur="cell.EDIT = false" />
             </div>
           </div>
         </div>
@@ -94,6 +100,7 @@ onMounted(() => {
     <div class="settings">
 
     </div>
+    <div class="tips"></div>
   </div>
 </template>
 <style lang="scss">
@@ -168,8 +175,6 @@ onMounted(() => {
             width: 100%;
             height: 100%;
             resize: none;
-            cursor: pointer;
-            pointer-events: none;
             font-size: 16px;
           }
 
